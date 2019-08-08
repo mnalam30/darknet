@@ -5,6 +5,7 @@ import os
 import cv2
 import numpy as np
 import time
+import datetime
 import darknet
 
 def convertBack(x, y, w, h):
@@ -14,8 +15,8 @@ def convertBack(x, y, w, h):
     ymax = int(round(y + (h / 2)))
     return xmin, ymin, xmax, ymax
 
-
 def cvDrawBoxes(detections, img):
+    import cv2
     for detection in detections:
         x, y, w, h = detection[2][0],\
             detection[2][1],\
@@ -32,7 +33,6 @@ def cvDrawBoxes(detections, img):
                     (pt1[0], pt1[1] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
                     [0, 255, 0], 2)
     return img
-
 
 netMain = None
 metaMain = None
@@ -56,7 +56,7 @@ def YOLO():
                          os.path.abspath(metaPath)+"`")
     if netMain is None:
         netMain = darknet.load_net_custom(configPath.encode(
-            "ascii"), weightPath.encode("ascii"), 0, 1)  # batch size = 1
+            "ascii"), weightPath.encode("ascii"), 0, 1)  #batch size = 1
     if metaMain is None:
         metaMain = darknet.load_meta(metaPath.encode("ascii"))
     if altNames is None:
@@ -79,21 +79,22 @@ def YOLO():
                     pass
         except Exception:
             pass
-    #cap = cv2.VideoCapture(0)
-    cap = cv2.VideoCapture("test.mp4")
+    cap = cv2.VideoCapture(0)
+    #cap = cv2.VideoCapture("WIN_20190418_09_59_07_Pro.mp4")
     cap.set(3, 1280)
     cap.set(4, 720)
-    out = cv2.VideoWriter(
-        "output.avi", cv2.VideoWriter_fourcc(*"MJPG"), 10.0,
-        (darknet.network_width(netMain), darknet.network_height(netMain)))
-    print("Starting the YOLO loop...")
+    #out = cv2.VideoWriter("output.avi", cv2.VideoWriter_fourcc(*"MJPG"), 10.0,(darknet.network_width(netMain), darknet.network_height(netMain)))
+    #print("Starting the YOLO loop...")
+    print("Initializing YOLO: Real Time Object Detection System")
+    #print("Press q to quit...")
 
-    # Create an image we reuse for each detect
+    #Create an image we reuse for each detect
     darknet_image = darknet.make_image(darknet.network_width(netMain),
                                     darknet.network_height(netMain),3)
     while True:
         prev_time = time.time()
         ret, frame_read = cap.read()
+        ret, image = cap.read()
         frame_rgb = cv2.cvtColor(frame_read, cv2.COLOR_BGR2RGB)
         frame_resized = cv2.resize(frame_rgb,
                                    (darknet.network_width(netMain),
@@ -105,11 +106,29 @@ def YOLO():
         detections = darknet.detect_image(netMain, metaMain, darknet_image, thresh=0.25)
         image = cvDrawBoxes(detections, frame_resized)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        print(1/(time.time()-prev_time))
+        #print(1/(time.time()-prev_time
+
+        date = datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S_%f")
+
+        #print log
+        print("Live_Video_Image_Detected_Frame_" + date + ".png", detections)
+
+		#extract detected frame
+        for detection in detections:
+            if detections is not None:
+                cv2.imwrite('Result_Live_Video_Image_Detected_Frame/Live_Video_Image_Detected_Frame_' + date + '.png', image)
+
+		#show output frame
         cv2.imshow('Demo', image)
-        cv2.waitKey(3)
+
+		#press q to exit
+        if cv2.waitKey(3) & 0xFF == ord('q'):
+            print("Exiting Program")
+            break
+
+        #cv2.waitKey(3)
     cap.release()
-    out.release()
+    cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     YOLO()
