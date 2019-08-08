@@ -10,7 +10,7 @@ More details: http://pjreddie.com/darknet/yolo/
 [![Contributors](https://img.shields.io/github/contributors/AlexeyAB/Darknet.svg)](https://github.com/AlexeyAB/darknet/graphs/contributors)
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](https://github.com/AlexeyAB/darknet/blob/master/LICENSE)  
 
-[UPDATE]
+﻿#[UPDATE August 2019]
 I added code in darknet_video.py for extracting detected output (image file) with its timestamp
 
 * [Requirements (and how to install dependecies)](#requirements)
